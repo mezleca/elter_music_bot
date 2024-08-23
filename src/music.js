@@ -1,12 +1,13 @@
 import fs from "fs";
 import * as dotenv from "dotenv";
 
+import { client } from "./main.js";
 import { download_song,download_by_name } from "./dlp.js";
 import { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, AudioPlayer, AudioPlayerStatus } from "@discordjs/voice";
 
 dotenv.config();
 
-const players = new Map();
+export const players = new Map();
 
 const isurl = (url) => {
 
@@ -29,6 +30,10 @@ const get_song = async (song) => {
 
         resolve(file_name);   
     });
+};
+
+export const queue_command = (interaction) => {
+    interaction.reply("TODO");
 };
 
 export const stop_command = (interaction) => {
@@ -87,7 +92,7 @@ export const pause_command = (interaction) => {
     player.pause(true);
 };
 
-export const skip_command = async (interaction) => {
+export const skip_command = async (interaction, custom_id) => {
     
     /** @type {import("discord.js").VoiceBasedChannel} */
     const channel = interaction.member.voice.channel;
@@ -107,18 +112,29 @@ export const skip_command = async (interaction) => {
 
     const player = current_player.player;
 
-    const next_song = () => {
+    const next_song = (custom) => {
+
+        const song_id = custom ? custom_id : 0;
 
         if (current_player.queue.length == 0) {
             return;
         }
 
+        if (custom > current_player.queue.length - 1 || !custom) {
+            interaction.reply("id invalido");
+            return;
+        }
+
         // remove the temp file
-        if (fs.existsSync(current_player.queue[0].file)) {
-            fs.unlinkSync(current_player.queue[0].file);
+        if (fs.existsSync(current_player.queue[song_id].file)) {
+            fs.unlinkSync(current_player.queue[song_id].file);
         }   
 
-        current_player.queue.shift();
+        if (custom_id) {
+            current_player.queue.splice(song_id, 1);
+        } else {
+            current_player.queue.shift();
+        }       
 
         if (current_player.queue.length == 0) {
             player.stop();
@@ -137,17 +153,13 @@ export const skip_command = async (interaction) => {
             return;
         }
 
-        current_player.skipping = true;
-
         // play next song in the queue
         player.play(next_resource);
 
         interaction.reply(`tocando: ${name}`);
-
-        current_player.skipping = false;
     };
     
-    next_song();
+    next_song(custom_id);
 };
 
 export const music_command = async (interaction, song) => {
@@ -197,7 +209,6 @@ export const music_command = async (interaction, song) => {
             playing: false,
             paused: false,
             initialized: false,
-            skipping: false,
             queue: []
         });
     }

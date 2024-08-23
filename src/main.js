@@ -2,7 +2,8 @@ import * as dotenv from "dotenv";
 import fs from "fs";
 
 import { Client, GatewayIntentBits } from "discord.js";
-import { music_command, pause_command, skip_command, stop_command } from "./music.js";
+import { players } from "./music.js";
+import { music_command, pause_command, skip_command, stop_command, queue_command } from "./music.js";
 
 dotenv.config();
 
@@ -16,6 +17,21 @@ const intents = [
 
 export const client = new Client({ intents: intents });
 
+const voice_member_count = async (id) => {
+
+    const channel = await client.channels.fetch(id);
+
+    if (!channel) {
+        return { size: 0, channel: null };
+    }
+  
+    if (!channel.isVoiceBased()) { 
+        return { size: 0, channel: null };
+    }
+
+    return { size: channel.members.size, channel: channel };
+};
+
 client.on("ready", (c) => {
 
     if (!fs.existsSync("./temp/")) {
@@ -24,6 +40,32 @@ client.on("ready", (c) => {
     }
 
     console.log("bot funcionando");
+});
+
+client.on('voiceStateUpdate', async (old, _new) => {
+
+    const id = old ? old.channelId : _new.channelId;
+
+    if (!players.has(id)) {
+        return;    
+    }
+
+    const { size, channel } = await voice_member_count(id);
+
+    if (size > 1) {
+        return;
+    }
+
+    if (!players.has(id) || !channel.members.has(client.user.id)) {
+        return;
+    }
+
+    console.log("removing bot from", id);
+
+    const current_player = players.get(id);
+
+    current_player.connection.destroy();
+    players.delete(id);
 });
 
 client.on("messageCreate", async (m) => {
@@ -59,11 +101,21 @@ client.on("messageCreate", async (m) => {
     }
 
     if (content == ".skip") {
-        await skip_command(m);
+
+        if (content.length > ".skip  ".length) {
+            await skip_command(m, (content.split(".skip "))[1]);
+            return;
+        }
+
+        await skip_command(m, );
     }
 
     if (content == ".stop") {
         await stop_command(m);
+    }
+
+    if (content == ".queue") {
+        await queue_command(m);
     }
 });
 
