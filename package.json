@@ -1,0 +1,21 @@
+{
+    "scripts": {
+        "start": "node ./src/main.js",
+        "dev": "nodemon ./src/main.js"
+    },
+    "type": "module",
+    "dependencies": {
+        "@discordjs/voice": "^0.17.0",
+        "@ybd-project/ytdl-core": "^5.0.12",
+        "axios": "^1.7.4",
+        "chrome-cookies-secure": "^2.1.1",
+        "discord.js": "^14.15.3",
+        "dotenv": "^16.4.5",
+        "libsodium-wrappers": "^0.7.15",
+        "nodemon": "^3.1.4",
+        "puppeteer": "^23.1.1",
+        "sqlite-parser": "^1.0.1",
+        "yt-play-cli": "^0.14.0",
+        "yt-search": "^2.12.1"
+    }
+}
