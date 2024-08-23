@@ -1,6 +1,6 @@
 a simple local music discord bot with (play, skip, pause, stop, queue) commands.
 
-#usage
+# usage
 - queue: show the current queue
 - play: play
 - stop: stop
