@@ -1,8 +1,8 @@
 import fs from "fs";
 import * as dotenv from "dotenv";
 
-import { client } from "./main.js";
-import { download_song,download_by_name } from "./dlp.js";
+import { EmbedBuilder } from "discord.js";
+import { download_song, download_by_name } from "./dlp.js";
 import { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, AudioPlayer, AudioPlayerStatus } from "@discordjs/voice";
 
 dotenv.config();
@@ -33,7 +33,46 @@ const get_song = async (song) => {
 };
 
 export const queue_command = (interaction) => {
-    interaction.reply("TODO");
+
+    const channel = interaction.member.voice.channel;
+    const id = channel.id;
+
+    if (!channel) {
+        interaction.reply("nao");
+        return;
+    }
+
+    const current_player = players.get(id);
+
+    if (!current_player) {
+        console.log("Something went wrong [current player]", current_player, id);
+        return;
+    }
+
+    const song_list = [];
+    const queue = current_player.queue;
+
+    for (let i = 0; i < queue.length; i++) {
+
+        const song = queue[i];
+
+        if (!song) {
+            continue;
+        }
+
+        const text = `${i} - ${song.name} by ${song.who}`;
+        song_list.push({ name: text, value: '\u200b' });
+    }
+
+    // TOFIX: this looks like shit
+    const retarded_embed = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle('queue list\n')
+        .setThumbnail('https://bigrat.monster/media/bigrat.jpg')
+        .addFields(song_list)
+        .setTimestamp()
+
+    interaction.reply({ embeds: [retarded_embed]});
 };
 
 export const stop_command = (interaction) => {
@@ -112,16 +151,21 @@ export const skip_command = async (interaction, custom_id) => {
 
     const player = current_player.player;
 
-    const next_song = (custom) => {
+    const next_song = () => {
 
-        const song_id = custom ? custom_id : 0;
+        const song_id = custom_id ? custom_id : 0;
 
         if (current_player.queue.length == 0) {
             return;
         }
 
-        if (custom > current_player.queue.length - 1 || !custom) {
+        if (custom_id && song_id > current_player.queue.length - 1) {
             interaction.reply("id invalido");
+            return;
+        }
+
+        if (custom_id) {
+            current_player.queue.splice(song_id, 1);
             return;
         }
 
@@ -129,12 +173,8 @@ export const skip_command = async (interaction, custom_id) => {
         if (fs.existsSync(current_player.queue[song_id].file)) {
             fs.unlinkSync(current_player.queue[song_id].file);
         }   
-
-        if (custom_id) {
-            current_player.queue.splice(song_id, 1);
-        } else {
-            current_player.queue.shift();
-        }       
+        
+        current_player.queue.shift();
 
         if (current_player.queue.length == 0) {
             player.stop();
@@ -246,6 +286,7 @@ export const music_command = async (interaction, song) => {
             resource: resource,
             name: audio_file.title,
             path: audio_file.file,
+            who: interaction.author.username
         });
 
         interaction.reply("Musica adicionada a queue");
@@ -304,7 +345,9 @@ export const music_command = async (interaction, song) => {
 
     current_player.queue.push({
         resouce: resource,
-        name: audio_file.title
+        name: audio_file.title,
+        path: audio_file.file,
+        who: interaction.author.username
     });
 
     player.play(resource);

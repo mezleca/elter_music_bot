@@ -68,6 +68,7 @@ client.on('voiceStateUpdate', async (old, _new) => {
     players.delete(id);
 });
 
+/** @param {Message} m */
 client.on("messageCreate", async (m) => {
 
     if (m.author.bot) {
@@ -102,12 +103,15 @@ client.on("messageCreate", async (m) => {
 
     if (content == ".skip") {
 
-        if (content.length > ".skip  ".length) {
-            await skip_command(m, (content.split(".skip "))[1]);
+        const args = m.content.split(" ");
+
+        if (args.length > 1 && args[1].length > 0) { 
+            const id = args[1];  
+            await skip_command(m, id);
             return;
         }
 
-        await skip_command(m, );
+        await skip_command(m);
     }
 
     if (content == ".stop") {
