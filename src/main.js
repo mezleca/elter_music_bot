@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import fs from "fs";
 
 import { Client, GatewayIntentBits } from "discord.js";
-import { players } from "./music.js";
+import { players, volume_command } from "./music.js";
 import { music_command, pause_command, skip_command, stop_command, queue_command } from "./music.js";
 
 dotenv.config();
@@ -80,6 +80,7 @@ client.on("messageCreate", async (m) => {
     }
 
     const content = (m.content.split(" "))[0];
+    const args = m.content.split(" ");
 
     if (content == ".ping") {
         m.reply("pong");
@@ -103,8 +104,6 @@ client.on("messageCreate", async (m) => {
 
     if (content == ".skip") {
 
-        const args = m.content.split(" ");
-
         if (args.length > 1 && args[1].length > 0) { 
             const id = args[1];  
             await skip_command(m, id);
@@ -116,6 +115,23 @@ client.on("messageCreate", async (m) => {
 
     if (content == ".stop") {
         await stop_command(m);
+    }
+
+    if (content == ".volume") {
+
+        if (args.length == 1) {
+            m.reply("cade o valor negao");
+            return;
+        }
+
+        const value = Number(args[1]);
+
+        if (isNaN(value)) {
+            m.reply("???");
+            return;
+        }
+
+        await volume_command(m, value);
     }
 
     if (content == ".queue") {
