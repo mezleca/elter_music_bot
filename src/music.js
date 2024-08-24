@@ -163,16 +163,16 @@ export const skip_command = async (interaction, custom_id) => {
             interaction.reply("id invalido");
             return;
         }
+           
+        // remove the temp file
+        if (fs.existsSync(current_player.queue[song_id].file)) {
+            fs.unlinkSync(current_player.queue[song_id].file);
+        }   
 
         if (custom_id) {
             current_player.queue.splice(song_id, 1);
             return;
         }
-
-        // remove the temp file
-        if (fs.existsSync(current_player.queue[song_id].file)) {
-            fs.unlinkSync(current_player.queue[song_id].file);
-        }   
         
         current_player.queue.shift();
 

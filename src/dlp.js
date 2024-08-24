@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import ytdl from "@ybd-project/ytdl-core";
-import ytsh from "yt-search";
+import ytsearch from "youtube-search-api";
 
 import { fileURLToPath } from 'node:url';
 import { scrape } from "./scraper/scraper.js";
@@ -18,32 +18,22 @@ if (poToken && visitorData) {
 }
 
 const get_by_name = async (name) => {
-    
-    const data = await ytsh(name);
 
-    if (!data) {
-        console.log("failed to find", name);
-        return null;
-    }
+    const fetch = await ytsearch.GetListByKeyword(name, false, 3, [{ type: "video" }]);
 
-    for (let i = 0; i < data.videos.length; i++) {
+    for (let i = 0; i < fetch.items.length; i++) {
 
-        const video = data.videos[i];
+        const item = fetch.items[i];
 
-        if (!video) {
+        if (!item) {
             continue;
         }
 
-        if (!video?.ago && video.url) {
-            return video;
-        }
-
-        // ignore streams/premiere
-        if (video.ago.includes("Streamed")) {
+        if (item.isLive) {
             continue;
         }
 
-        return video;
+        return item;
     }
 
     return null;
@@ -97,10 +87,11 @@ export const download_by_name = (name) => {
             }
 
             const cookies = poToken && visitorData ? { poToken, visitorData } : {};
+            const url = `https://www.youtube.com/watch?v=${video_data.id}`;
             const _path = path.resolve(__dirname, "temp");
             const filepath = path.join(_path, `${get_id()}.webm`);
 
-            ytdl(video_data.url, { filter: 'audioonly', ...cookies, clients: ['web_creator', 'ios', 'android', 'tv_embedded'] })
+            ytdl(url, { filter: 'audioonly', ...cookies, clients: ['web_creator', 'ios', 'android', 'tv_embedded'] })
             .pipe(fs.createWriteStream(filepath))
             .on('finish', () => {
                 resolve({ success: true, file: filepath, title: video_data.title });
