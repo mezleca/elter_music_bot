@@ -9,6 +9,7 @@ import { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioR
 dotenv.config();
 
 export const players = new Map();
+const QUEUE_MAX_SIZE = 16;
 
 const config = {
     volume: 1
@@ -132,7 +133,7 @@ export const skip_command = async (interaction, custom_id) => {
 
         const next_song = () => {
 
-            const song_id = custom_id ? custom_id : 0;
+            const song_id = (custom_id ? custom_id : 0) - 1;
 
             if (current_player.queue.length == 0) {
                 return;
@@ -267,6 +268,11 @@ export const music_command = async (interaction, song) => {
 
     if (!current_player) {
         console.log("Something went wrong [current player]", current_player, id);
+        return;
+    }
+
+    if (current_player.queue == QUEUE_MAX_SIZE) {
+        interaction.reply("queue ta cheia negao. limite: " + QUEUE_MAX_SIZE);
         return;
     }
 

@@ -12,7 +12,7 @@ export const download_song = async (url, t) => {
         const title = t ? t : await get_metadata(url);
         const stream = ytdl(url, { 
             filter: 'audioonly', 
-            quality: "highest", 
+            quality: "highestaudio", 
             ...cookies, 
             clients: ['web_creator', 'ios', 'android', 'tv_embedded'],
             highWaterMark: 1 << 25
@@ -38,11 +38,11 @@ export const download_by_name = async (name) => {
         const video_data = await get_by_name(name);
         const video = video_data.find((v) => v.url && v.live == false);
 
-        console.log("found song", video);
-
-        if (!video_data) {
+        if (!video) {
             return null;
         }
+
+        console.log("found song", video);
         
         const data = await download_song(video.url, video.title);
         

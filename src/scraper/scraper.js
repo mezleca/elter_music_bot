@@ -113,6 +113,8 @@ export const search_youtube = async (query, limit) => {
                 live: is_live
             });
         }
+
+        console.log("youtube search:", videos);
       
         return videos;
 
