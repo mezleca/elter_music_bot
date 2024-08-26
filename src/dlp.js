@@ -1,12 +1,7 @@
-import path from "path";
 import ytdl from "@ybd-project/ytdl-core";
 
-import { fileURLToPath } from 'node:url';
 import { cookies, get_metadata, search_youtube } from "./scraper/scraper.js";
 import { createAudioResource } from "@discordjs/voice";
-    
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.resolve(path.dirname(__filename), "..");
 
 const get_by_name = async (name) => await search_youtube(name, 3) || null;
 

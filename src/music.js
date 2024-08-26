@@ -57,35 +57,32 @@ const get_info = (interaction) => {
 export const queue_command = (interaction) => {
 
     try {
+
         const { current_player } = get_info(interaction);
- 
-        const song_list = [];
         const queue = current_player.queue;
 
-        for (let i = 0; i < queue.length; i++) {
-
-            const song = queue[i];
-
-            if (!song) {
-                continue;
-            }
-
-            const text = `${i} - ${song.name} by ${song.who}`;
-            song_list.push({ name: text, value: '\u200b' });
+        if (queue.length == 0) {
+            return interaction.reply('tem nada na queue galado');
         }
 
-        // TOFIX: this looks like shit
-        const retarded_embed = new EmbedBuilder()
-            .setColor(0x0099FF)
-            .setTitle('queue list\n')
-            .setThumbnail('https://bigrat.monster/media/bigrat.jpg')
-            .addFields(song_list)
-            .setTimestamp()
+        const songList = queue.map((song, index) => ({
+            name: `${index + 1}. ${song.name}`,
+            value: `by: ${song.who}`
+        })).filter(song => song.name && song.value);
 
-        interaction.reply({ embeds: [retarded_embed]});
-    } catch(err) {
-        console.log(err);
-    } 
+        const embed = new EmbedBuilder()
+            .setColor('#3498db')
+            .setTitle('🎵🎵🎵')
+            .addFields(songList)
+            .setThumbnail('https://bigrat.monster/media/bigrat.jpg')
+            .setFooter({ text: `length: ${songList.length}` })
+            .setTimestamp();
+
+        interaction.reply({ embeds: [embed] });
+    } catch (err) {
+        console.error('queue error:', err);
+        interaction.reply('queue nao encontrada');
+    }
 };
 
 export const stop_command = (interaction) => {
