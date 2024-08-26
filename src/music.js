@@ -65,7 +65,7 @@ export const queue_command = (interaction) => {
             return interaction.reply('tem nada na queue galado');
         }
 
-        const songList = queue.map((song, index) => ({
+        const song_list = queue.map((song, index) => ({
             name: `${index + 1}. ${song.name}`,
             value: `by: ${song.who}`
         })).filter(song => song.name && song.value);
@@ -73,9 +73,9 @@ export const queue_command = (interaction) => {
         const embed = new EmbedBuilder()
             .setColor('#3498db')
             .setTitle('🎵🎵🎵')
-            .addFields(songList)
+            .addFields(song_list)
             .setThumbnail('https://bigrat.monster/media/bigrat.jpg')
-            .setFooter({ text: `length: ${songList.length}` })
+            .setFooter({ text: `length: ${song_list.length}` })
             .setTimestamp();
 
         interaction.reply({ embeds: [embed] });
