@@ -33,12 +33,6 @@ const voice_member_count = async (id) => {
 };
 
 client.on("ready", (c) => {
-
-    if (!fs.existsSync("./temp/")) {
-        console.log("Criando pasta temp");
-        fs.mkdirSync("./temp");
-    }
-
     console.log("bot funcionando");
 });
 

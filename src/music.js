@@ -152,11 +152,6 @@ export const skip_command = async (interaction, custom_id) => {
                 interaction.reply("id invalido");
                 return;
             }
-            
-            // remove the temp file
-            if (fs.existsSync(current_player.queue[song_id].file)) {
-                fs.unlinkSync(current_player.queue[song_id].file);
-            }   
 
             if (custom_id) {
                 current_player.queue.splice(song_id, 1);
@@ -287,9 +282,9 @@ export const music_command = async (interaction, song) => {
 
     /** @type {AudioPlayer} */
     const player = current_player.player;
-    const audio_file = await get_song(song);
+    const audio = await get_song(song);
 
-    if (!audio_file) {
+    if (!audio) {
         
         interaction.reply("url invalida");
 
@@ -302,15 +297,14 @@ export const music_command = async (interaction, song) => {
         return;
     }
 
-    const resource = createAudioResource(audio_file.file, { inlineVolume: true });
+    const resource = audio.resource;
 
     if (current_player.queue.length > 0) {
 
         // add the song to queue
         current_player.queue.push({
             resource: resource,
-            name: audio_file.title,
-            path: audio_file.file,
+            name: audio.title,
             who: interaction.author.username
         });
 
@@ -325,11 +319,6 @@ export const music_command = async (interaction, song) => {
     };
 
     const next_song = () => {
-
-        // remove the temp file
-        if (fs.existsSync(current_player.queue[0].file)) {
-            fs.unlinkSync(current_player.queue[0].file);
-        }   
 
         current_player.queue.shift();
 
@@ -372,8 +361,7 @@ export const music_command = async (interaction, song) => {
 
     current_player.queue.push({
         resource: resource,
-        name: audio_file.title,
-        path: audio_file.file,
+        name: audio.title,
         who: interaction.author.username
     });
 

@@ -1,19 +1,36 @@
 import puppeteer from "puppeteer";
+import fetch from 'node-fetch';
 
 const id = "jNQXAC9IVRw";
 
-// from: https://github.com/fsholehan/scrape-youtube
+const pup = {
+    browser: null
+};
 
+const initialize_pup = async () => {  
+    try {
+        pup.browser = await puppeteer.launch({ headless: true });
+    } catch(err) {
+        throw Error(err);
+    }
+};
+
+await initialize_pup();
+
+// from: https://github.com/fsholehan/scrape-youtube
 export function scrape() {
 
     return new Promise(async (resolve, reject) => {
 
-        const browser = await puppeteer.launch({ headless: true });
+        if (!pup.browser) {
+            throw Error("pup is not initialized");
+        }
+
+        const browser = pup.browser;
+        const page = await browser.newPage();
+        const client = await page.createCDPSession();
 
         try {
-
-            const page = await browser.newPage();
-            const client = await page.createCDPSession();
 
             await client.send("Debugger.enable");
             await client.send("Debugger.setAsyncCallStackDepth", { maxDepth: 32 });
@@ -37,7 +54,7 @@ export function scrape() {
                         visitorData: visitor_data
                     });
 
-                    browser.close();
+                    page.close();
                 }
             });
 
@@ -45,13 +62,56 @@ export function scrape() {
                 aitUntil: "networkidle2",
             });
 
-
             const playButton = await page.$("#movie_player");
             await playButton.click();
+
         } catch (error) {
             console.error("error scraping youTube data:", error);
-            await browser.close();
+            await page.close();
             return reject(null)
         }
     });
 }
+
+export const search_youtube = async (query, limit) => {
+
+    if (!limit) {
+        throw Error("missing limit parameter");
+    }
+  
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%3D%3D`;
+    
+    try {
+
+        const response = await fetch(url);
+        const html = await response.text();
+
+        const ytInitialData = html.split('var ytInitialData = ')[1].split(';</script>')[0];
+        const data = JSON.parse(ytInitialData);
+        
+        const videos = [];
+        const content = data.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents.filter(item => item.videoRenderer);
+        
+        for (let i = 0; i < content.length; i++) {
+            
+            const item = content[i];
+            const data = item.videoRenderer;
+
+            if (videos.length == limit) {
+                break;
+            }
+
+            videos.push({
+                title: data.title.runs[0].text,
+                url: `https://www.youtube.com/watch?v=${data.videoId}`,
+                channel: data.ownerText.runs[0].text
+            });
+        }
+      
+        return videos;
+
+    } catch (error) {
+        console.error("error searching youtube:", error);
+        throw error;
+    }
+};

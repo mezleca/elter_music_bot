@@ -1,10 +1,9 @@
 import path from "path";
-import fs from "fs";
 import ytdl from "@ybd-project/ytdl-core";
-import ytsearch from "youtube-search-api";
 
 import { fileURLToPath } from 'node:url';
-import { scrape } from "./scraper/scraper.js";
+import { scrape, search_youtube } from "./scraper/scraper.js";
+import { createAudioResource } from "@discordjs/voice";
     
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.resolve(path.dirname(__filename), "..");
@@ -23,37 +22,32 @@ let cookies = {};
     }
 })();
 
-const get_by_name = async (name) => {
-    const fetch = await ytsearch.GetListByKeyword(name, false, 3, [{ type: "video" }]);
-    return fetch.items.find(item => item && !item.isLive) || null;
-};
+const get_by_name = async (name) => await search_youtube(name, 1) || null;
 
-const get_id = () => Date.now();
+export const download_song = async (url) => {
 
-export const download_song = (url) => {
+    try {
 
-    return new Promise(async (resolve, reject) => {
-        
-        try {
+        const info = await ytdl.getInfo(url, { ...cookies });
+        const stream = ytdl(url, { 
+            filter: 'audioonly', 
+            quality: "highest", 
+            ...cookies, 
+            clients: ['web_creator', 'ios', 'android', 'tv_embedded'],
+            highWaterMark: 1 << 25
+        });
 
-            const _path = path.resolve(__dirname, "temp");
-            const info = await ytdl.getInfo(url, { ...cookies });
-            const file_path = path.join(_path, `${get_id()}.webm`);
-            
-            ytdl(url, { filter: 'audioonly', quality: "highest", ...cookies, clients: ['web_creator', 'ios', 'android', 'tv_embedded'] })
-                .pipe(fs.createWriteStream(file_path))
-                .on('finish', () => {
-                    resolve({ success: true, file: file_path, title: info.videoDetails.title });
-                })
-                .on('error', (err) => {
-                    console.error('error during download:', err);
-                    resolve(null);
-                });
-        } catch (error) {
-            console.error('failed to download:', error);
-            resolve(null);
-        }
-    });
+        const resource = createAudioResource(stream, {
+            inputType: 'arbitrary',
+            inlineVolume: true
+        });
+
+        return { resource, title: info.videoDetails.title };
+
+    } catch (error) {
+        console.error('Falha ao criar o stream:', error);
+        return null;
+    }
 };
 
 export const download_by_name = async (name) => {
@@ -65,12 +59,10 @@ export const download_by_name = async (name) => {
         if (!video_data) {
             return null;
         }
-            
-        const url = `https://www.youtube.com/watch?v=${video_data.id}`;
-        const data = await download_song(url);
-
-        return data;
         
+        const data = await download_song(video_data[0].url);
+        return data;    
+
     } catch (error) {
         console.error('Failed to download by name:', error);
         return null;
