@@ -10,8 +10,7 @@ ex: .skip 2 (skip the third song in the queue)
 - volume: set the volume ( 0 - 1 range )
 
 # todo
-- fix lag while adding a new song (probally something about the ytsearch)
+- fix lag while adding a new song (quite fixed?)
 - improve queue design
-- make download faster
 
 is youtube only (for now).

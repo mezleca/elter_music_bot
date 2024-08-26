@@ -22,7 +22,7 @@ let cookies = {};
     }
 })();
 
-const get_by_name = async (name) => await search_youtube(name, 1) || null;
+const get_by_name = async (name) => await search_youtube(name, 3) || null;
 
 export const download_song = async (url) => {
 
@@ -55,12 +55,14 @@ export const download_by_name = async (name) => {
     try {
 
         const video_data = await get_by_name(name);
+        const video = video_data.find((v) => v.url);
 
         if (!video_data) {
             return null;
         }
         
-        const data = await download_song(video_data[0].url);
+        const data = await download_song(video.url);
+        
         return data;    
 
     } catch (error) {
