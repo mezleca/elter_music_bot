@@ -1,5 +1,6 @@
 import puppeteer from "puppeteer";
 import fetch from 'node-fetch';
+import fs from "fs";
 
 const id = "jNQXAC9IVRw";
 
@@ -75,7 +76,11 @@ export const search_youtube = async (query, limit) => {
     
     try {
 
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: {
+                'Accept-Language': 'en-US,en;q=0.9'
+            }
+        });
         const html = await response.text();
 
         const ytInitialData = html.split('var ytInitialData = ')[1].split(';</script>')[0];
@@ -83,11 +88,19 @@ export const search_youtube = async (query, limit) => {
         
         const videos = [];
         const content = data.contents.twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer.contents[0].itemSectionRenderer.contents.filter(item => item.videoRenderer);
-        
+
         for (let i = 0; i < content.length; i++) {
             
             const item = content[i];
             const data = item.videoRenderer;
+
+            let is_live = false;
+
+            if (data?.badges) {
+                if (data.badges[0].metadataBadgeRenderer.label == "LIVE") {
+                    is_live = true;
+                }
+            }
 
             if (videos.length == limit) {
                 break;
@@ -96,7 +109,8 @@ export const search_youtube = async (query, limit) => {
             videos.push({
                 title: data.title.runs[0].text,
                 url: `https://www.youtube.com/watch?v=${data.videoId}`,
-                channel: data.ownerText.runs[0].text
+                channel: data.ownerText.runs[0].text,
+                live: is_live
             });
         }
       

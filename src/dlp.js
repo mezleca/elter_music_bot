@@ -41,7 +41,7 @@ export const download_by_name = async (name) => {
     try {
 
         const video_data = await get_by_name(name);
-        const video = video_data.find((v) => v.url);
+        const video = video_data.find((v) => v.url && v.live == false);
 
         console.log("found song", video);
 
