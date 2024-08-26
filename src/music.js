@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 
 import { EmbedBuilder, Message } from "discord.js";
 import { download_song, download_by_name } from "./dlp.js";
+import { isurl } from "./scraper/scraper.js";
 import { joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, AudioPlayer, AudioPlayerStatus, AudioResource } from "@discordjs/voice";
 
 dotenv.config();
@@ -11,14 +12,6 @@ export const players = new Map();
 
 const config = {
     volume: 1
-};
-
-const isurl = (url) => {
-
-    const pattern =
-    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
-
-    return pattern.test(url);
 };
 
 const get_song = async (song) => {

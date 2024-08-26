@@ -3,30 +3,22 @@ import fetch from 'node-fetch';
 
 const id = "jNQXAC9IVRw";
 
-const pup = {
-    browser: null
+export const isurl = (url) => {
+
+    const pattern =
+    /(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/g;
+
+    return pattern.test(url);
 };
 
-const initialize_pup = async () => {  
-    try {
-        pup.browser = await puppeteer.launch({ headless: true });
-    } catch(err) {
-        throw Error(err);
-    }
-};
-
-await initialize_pup();
+export let cookies = {};
 
 // from: https://github.com/fsholehan/scrape-youtube
 export function scrape() {
 
     return new Promise(async (resolve, reject) => {
 
-        if (!pup.browser) {
-            throw Error("pup is not initialized");
-        }
-
-        const browser = pup.browser;
+        const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
         const client = await page.createCDPSession();
 
@@ -54,7 +46,7 @@ export function scrape() {
                         visitorData: visitor_data
                     });
 
-                    page.close();
+                    browser.close();
                 }
             });
 
@@ -67,7 +59,7 @@ export function scrape() {
 
         } catch (error) {
             console.error("error scraping youTube data:", error);
-            await page.close();
+            await browser.close();
             return reject(null)
         }
     });
@@ -112,6 +104,50 @@ export const search_youtube = async (query, limit) => {
 
     } catch (error) {
         console.error("error searching youtube:", error);
-        throw error;
+        return null;
     }
 };
+
+// i mean its only the title but whatever
+export const get_metadata = async (url) => {
+
+    try {
+
+        if (!isurl(url)) {
+            console.log("metadata: url is not valid");
+            return;
+        }
+
+        const response = await fetch(url);
+
+        const html = await response.text();
+
+        const ytInitialData = html.split('var ytInitialData = ')[1].split(';</script>')[0];
+        const data = JSON.parse(ytInitialData);
+
+        if (!data) {
+            console.log("metadata: failed to get metadata", url);
+            return "Unknown title";
+        }
+
+        const title = data.playerOverlays.playerOverlayRenderer.videoDetails.playerOverlayVideoDetailsRenderer.title.simpleText;
+        return title;
+
+    } catch (error) {
+        console.error("error getting metadata", error);
+        return "Unknown";
+    }
+};
+
+(async () => {
+
+    const { poToken, visitorData } = await scrape();
+
+    if (poToken && visitorData) {
+        cookies = { poToken, visitorData };
+        console.log("finished cookie setup");
+    } else {
+        console.log("failed to get cookies");
+    }
+    
+})();
