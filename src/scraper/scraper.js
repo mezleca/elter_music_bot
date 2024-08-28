@@ -1,6 +1,7 @@
 import puppeteer from "puppeteer";
 import fetch from 'node-fetch';
 import fs from "fs";
+import path from "path";
 
 const id = "jNQXAC9IVRw";
 
@@ -14,12 +15,38 @@ export const isurl = (url) => {
 
 export let cookies = {};
 
+const initialize_browser = async () => {
+    
+    try {
+
+        let args = {
+            headless: true,
+            args: ['--no-sandbox']
+        };
+
+        if (process.platform == "linux") {
+            // check if chromium is installed
+            if (!fs.existsSync(path.resolve("/usr/bin/chromium"))) {
+                throw Error("chromium not found");
+            }
+
+            args.executablePath = "/usr/bin/chromium";
+        }
+
+        const browser = await puppeteer.launch(args);
+        return browser;
+
+    } catch (err) {
+        throw err;
+    }
+};
+
 // from: https://github.com/fsholehan/scrape-youtube
 export function scrape() {
 
     return new Promise(async (resolve, reject) => {
 
-        const browser = await puppeteer.launch({ headless: true });
+        const browser = await initialize_browser();
         const page = await browser.newPage();
         const client = await page.createCDPSession();
 
