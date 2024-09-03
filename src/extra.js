@@ -15,7 +15,7 @@ export const clean_channel = async (interaction) => {
     }
 
     // delete it :3
-    current_channel.delete("cleaned");
+    await current_channel.delete("cleaned");
     
     // create a new channel using the old_perms
     const new_channel = await current_channel.guild.channels.create({
