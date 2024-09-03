@@ -3,6 +3,7 @@ import fs from "fs";
 
 import { Client, GatewayIntentBits } from "discord.js";
 import { players, volume_command } from "./music.js";
+import { clean_channel } from "./extra.js";
 import { music_command, pause_command, skip_command, stop_command, queue_command } from "./music.js";
 
 dotenv.config();
@@ -126,6 +127,10 @@ client.on("messageCreate", async (m) => {
         }
 
         await volume_command(m, value);
+    }
+
+    if (content == ".clean") {
+        await clean_channel(m);
     }
 
     if (content == ".queue") {
