@@ -13,9 +13,6 @@ export const clean_channel = async (interaction) => {
         interaction.reply("channel not found");
         return;
     }
-
-    // delete it :3
-    await current_channel.delete("cleaned");
     
     // create a new channel using the old_perms
     const new_channel = await current_channel.guild.channels.create({
@@ -24,6 +21,9 @@ export const clean_channel = async (interaction) => {
         parent: current_channel.parent,
         permissionOverwrites: current_channel.permissionOverwrites.cache
     });
+  
+    // delete it :3
+    await current_channel.delete("cleaned");
 
     // let the user know
     new_channel.send('canal limpo :+1:');
