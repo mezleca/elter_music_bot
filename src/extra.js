@@ -15,7 +15,7 @@ export const clean_channel = async (interaction) => {
     }
     
     // create a new channel using the old_perms
-    const new_channel = await current_channel.guild.channels.create({
+    await current_channel.guild.channels.create({
         name: current_channel.name,
         type: current_channel.type,
         parent: current_channel.parent,
