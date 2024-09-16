@@ -1,7 +1,12 @@
-import ytdl from "@ybd-project/ytdl-core";
-
-import { cookies, get_metadata, search_youtube } from "./scraper/scraper.js";
+import { YtdlCore } from "@ybd-project/ytdl-core";
+import { get_cookies, get_metadata, search_youtube } from "./scraper/scraper.js";
 import { createAudioResource } from "@discordjs/voice";
+
+const cookies_data = await get_cookies();
+
+const ytdl = new YtdlCore({
+    ...cookies_data
+});
 
 const get_by_name = async (name) => await search_youtube(name, 3) || null;
 
@@ -10,10 +15,9 @@ export const download_song = async (url, t) => {
     try {
 
         const title = t ? t : await get_metadata(url);
-        const stream = ytdl(url, { 
+        const stream = ytdl.download(url, { 
             filter: 'audioonly', 
             quality: "highestaudio", 
-            ...cookies, 
             clients: ['web_creator', 'ios', 'android', 'tv_embedded'],
             highWaterMark: 1 << 25
         });

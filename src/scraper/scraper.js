@@ -13,7 +13,23 @@ export const isurl = (url) => {
     return pattern.test(url);
 };
 
-export let cookies = {};
+// TODO: rewrite this using the whereis command
+export const find_path = () => {
+    
+    const possible_paths = ["/usr/bin/chromium", "/snap/bin/chromium"];
+
+    for (let i = 0; i < possible_paths; i++) {
+        
+        const exist = fs.existsSync(possible_paths[i]);
+        if (!exist) {
+            continue;
+        }
+
+        return possible_paths[i];
+    }
+
+    return null;
+};
 
 const initialize_browser = async () => {
     
@@ -24,13 +40,15 @@ const initialize_browser = async () => {
             args: ['--no-sandbox']
         };
 
+        const chromium_path = find_path();
+
         if (process.platform == "linux") {
-            // check if chromium is installed
-            if (!fs.existsSync(path.resolve("/usr/bin/chromium"))) {
+            
+            if (!chromium_path) {
                 throw Error("chromium not found");
             }
 
-            args.executablePath = "/usr/bin/chromium";
+            args.executablePath = chromium_path;
         }
 
         const browser = await puppeteer.launch(args);
@@ -42,7 +60,7 @@ const initialize_browser = async () => {
 };
 
 // from: https://github.com/fsholehan/scrape-youtube
-export function scrape() {
+export function get_cookies() {
 
     return new Promise(async (resolve, reject) => {
 
@@ -181,16 +199,3 @@ export const get_metadata = async (url) => {
         return "Unknown";
     }
 };
-
-(async () => {
-
-    const { poToken, visitorData } = await scrape();
-
-    if (poToken && visitorData) {
-        cookies = { poToken, visitorData };
-        console.log("finished cookie setup");
-    } else {
-        console.log("failed to get cookies");
-    }
-    
-})();
