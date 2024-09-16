@@ -24,7 +24,4 @@ export const clean_channel = async (interaction) => {
   
     // delete it :3
     await current_channel.delete("cleaned");
-
-    // let the user know
-    new_channel.send('canal limpo :+1:');
 };
