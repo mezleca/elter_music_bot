@@ -20,6 +20,7 @@ export const clean_channel = async (interaction) => {
     const new_channel = await current_channel.guild.channels.create({
         name: current_channel.name,
         type: current_channel.type,
+        parent: current_channel.parent,
         permissionOverwrites: current_channel.permissionOverwrites.cache,
         position: current_channel.position
     });
