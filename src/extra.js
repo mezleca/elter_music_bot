@@ -27,8 +27,9 @@ export const clean_channel = async (interaction) => {
         permissionOverwrites: current_channel.permissionOverwrites.cache,
         position: current_channel.position + 1
     });
-  
-    const random_msg = retarded_messages[Math.floor(Math.random() * retarded_messages.length - 1)];
+    
+    const random_index = Math.floor(Math.random() * retarded_messages.length);
+    const random_msg = retarded_messages[random_index];
 
     if (!random_msg) {
         console.log("invalid random message", random_msg);
