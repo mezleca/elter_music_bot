@@ -18,7 +18,7 @@ export const find_path = () => {
     
     const possible_paths = ["/usr/bin/chromium", "/snap/bin/chromium"];
 
-    for (let i = 0; i < possible_paths; i++) {
+    for (let i = 0; i < possible_paths.length; i++) {
         
         const exist = fs.existsSync(possible_paths[i]);
         if (!exist) {
