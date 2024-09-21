@@ -118,7 +118,7 @@ const download_audio_stream = (video_url, test) => {
             audio_stream.push(data);
         });
 
-        yt_dlp_process.on("close", (code) => {
+        yt_dlp_process.on("close", (code, signal) => {
 
             if (code != 0) {
                 return reject(`[ERROR] yt-dlp process exited with code ${code} | Reason: probably ip banned LUL`);        
@@ -135,9 +135,15 @@ const download_audio_stream = (video_url, test) => {
             return resolve(audio_stream);
         });
 
+        yt_dlp_process.on("data", (data) => {
+            console.log(data);
+        });
+
         yt_dlp_process.stderr.on("data", (data) => {
 
             const error_output = data.toString();
+
+            console.log(data);
 
             if (error_output.includes("[ERROR]")) {
                 console.log(`[ERROR] ${error_output}\n[ERROR] Reason: probably ip banned LUL`);
