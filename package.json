@@ -7,12 +7,12 @@
     "dependencies": {
         "@discordjs/opus": "^0.9.0",
         "@discordjs/voice": "^0.17.0",
-        "@ybd-project/ytdl-core": "^5.1.7",
         "axios": "^1.7.4",
         "discord.js": "^14.15.3",
         "dotenv": "^16.4.5",
         "libsodium-wrappers": "^0.7.15",
         "nodemon": "^3.1.4",
-        "puppeteer": "^23.1.1"
+        "puppeteer": "^23.1.1",
+        "youtube-dl-exec": "^3.0.9"
     }
 }

@@ -345,6 +345,10 @@ export const music_command = async (interaction, song) => {
         next_song();
     });
 
+    player.on(AudioPlayerStatus.Buffering, (v) => {
+        console.log(v);
+    });
+
     player.on(AudioPlayerStatus.Idle, () => {
 
         if (current_player.queue.length > 0) {
