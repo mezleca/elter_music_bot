@@ -87,6 +87,9 @@ export function get_cookies() {
                         return reject("Failed to get token/visitor data");
                     }
 
+                    const cookies = await page.cookies();
+                    const cookies_string = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
                     resolve({
                         poToken: po_token,
                         visitorData: visitor_data,
