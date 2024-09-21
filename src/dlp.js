@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs, { chmodSync } from "fs";
 import path from "path";
 import axios from "axios";
 
@@ -60,11 +60,7 @@ const setup_dlp = () => {
 
         // if you're on linux, im pretty sure you need to do this
         if (process.platform == "linux") {
-            exec(`chmod +x ${bin_path}`, (err) => {
-                if (err) {
-                    throw Error("failed to give perm");
-                }
-            });
+            chmodSync(bin_path, 0o777);
         }
 
         console.log("[LOG] dlp setup completed");
