@@ -74,7 +74,7 @@ export function get_cookies() {
             await client.send("Debugger.setAsyncCallStackDepth", { maxDepth: 32 });
             await client.send("Network.enable");
 
-            client.on("Network.requestWillBeSent", (e) => {
+            client.on("Network.requestWillBeSent", async (e) => {
 
                 if (e.request.url.includes("/youtubei/v1/player")) {
 
@@ -87,9 +87,15 @@ export function get_cookies() {
                         return reject("Failed to get token/visitor data");
                     }
 
+                    const cookies = await page.cookies();
+                    const cookies_string = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
+
+                    console.log(cookies);
+
                     resolve({
                         poToken: po_token,
-                        visitorData: visitor_data
+                        visitorData: visitor_data,
+                        cookies: cookies_string
                     });
 
                     browser.close();

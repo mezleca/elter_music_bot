@@ -2,10 +2,12 @@ import fs, { chmodSync } from "fs";
 import path from "path";
 import axios from "axios";
 
-import { get_metadata, search_youtube } from "./scraper/scraper.js";
+import { get_cookies, get_metadata, search_youtube } from "./scraper/scraper.js";
 import { createAudioResource } from "@discordjs/voice";
 import { spawn } from "child_process";
 import { Readable } from "stream";
+
+const cookies_data = await get_cookies();
 
 const get_by_name = async (name) => await search_youtube(name, 3) || null;
 const plataform_info = {
@@ -25,6 +27,13 @@ const setup_dlp = () => {
         if (!fs.existsSync(cache_path)) {
             fs.mkdirSync(cache_path);
         }
+
+        const { cookies } = await get_cookies();
+
+        console.log("[LOG] getting cookies");
+
+        // create a cookies.txt file in the cache folder
+        fs.writeFileSync("./cache/cookies.txt", cookies);
 
         if (!fs.existsSync(bin_folder)) {
             fs.mkdirSync(bin_folder);
@@ -80,11 +89,18 @@ const download_audio_stream = (video_url, test) => {
             "--no-check-certificates",
             "--prefer-free-formats",
             "--add-header", "referer:youtube.com",
-            "--add-header", "user-agent:googlebot",
+            "--add-header", "user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             "-f", "bestaudio",
             "--cache-dir", cache_dir,
             "-N", "4",
             "-o", "-",
+            "--cookies", `${path.resolve(bin_path, "..", "cache", "cookies.txt")}`,
+            "--no-warnings",
+            "--ignore-errors",
+            "--extractor-retries", "3",
+            "--fragment-retries", "3",
+            "--skip-unavailable-fragments",
+            "--no-playlist"
         ];
 
         if (test) {
@@ -102,7 +118,7 @@ const download_audio_stream = (video_url, test) => {
             audio_stream.push(data);
         });
 
-        yt_dlp_process.on("close", (code) => {
+        yt_dlp_process.on("close", (code, signal) => {
 
             if (code != 0) {
                 return reject(new Error(`[ERROR] yt-dlp process exited with code ${code}`));        
@@ -119,9 +135,15 @@ const download_audio_stream = (video_url, test) => {
             return resolve(audio_stream);
         });
 
+        yt_dlp_process.on("data", (data) => {
+            console.log(data);
+        });
+
         yt_dlp_process.stderr.on("data", (data) => {
 
             const error_output = data.toString();
+
+            console.log(data);
 
             if (error_output.includes("[ERROR]")) {
                 console.error(`[ERROR] ${error_output}`);
