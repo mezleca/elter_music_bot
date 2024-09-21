@@ -94,7 +94,7 @@ const download_audio_stream = (video_url, test) => {
             "--cache-dir", cache_dir,
             "-N", "4",
             "-o", "-",
-            "--cookies", `${path.resolve(bin_path, "..", "cache", "cookies.txt")}`,
+            "--cookies", `${path.resolve(bin_path)}../cache/cookies.txt`,
             "--no-warnings",
             "--ignore-errors",
             "--extractor-retries", "3",
@@ -105,9 +105,9 @@ const download_audio_stream = (video_url, test) => {
 
         if (test) {
             console.log("[LOG] testing dlp download", video_url);
+        } else {
+            console.log("[LOG] starting download for", video_url);
         }
-
-        console.log("[LOG] starting download for", video_url);
 
         const yt_dlp_process = spawn(bin_path, yt_dlp_command);
         const audio_stream = new Readable({
@@ -118,10 +118,10 @@ const download_audio_stream = (video_url, test) => {
             audio_stream.push(data);
         });
 
-        yt_dlp_process.on("close", (code, signal) => {
+        yt_dlp_process.on("close", (code) => {
 
             if (code != 0) {
-                return reject(new Error(`[ERROR] yt-dlp process exited with code ${code}`));        
+                return reject(`[ERROR] yt-dlp process exited with code ${code} | Reason: probably ip banned LUL`);        
             } 
 
             audio_stream.push(null);
@@ -135,26 +135,24 @@ const download_audio_stream = (video_url, test) => {
             return resolve(audio_stream);
         });
 
-        yt_dlp_process.on("data", (data) => {
-            console.log(data);
-        });
-
         yt_dlp_process.stderr.on("data", (data) => {
 
             const error_output = data.toString();
 
-            console.log(data);
-
             if (error_output.includes("[ERROR]")) {
-                console.error(`[ERROR] ${error_output}`);
+                console.log(`[ERROR] ${error_output}\n[ERROR] Reason: probably ip banned LUL`);
             }
         });
     });
 };
 
-// setup and make sure everything is working 
-await setup_dlp();
-await download_audio_stream("https://www.youtube.com/watch?v=x6mj02JpWhY", true);
+try {
+    // setup and make sure everything is working 
+    await setup_dlp();
+    await download_audio_stream("https://www.youtube.com/watch?v=x6mj02JpWhY", true);
+} catch(err) {
+    console.log(err);
+}
 
 export const download_song = async (url, t) => {
 

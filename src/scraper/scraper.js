@@ -90,8 +90,6 @@ export function get_cookies() {
                     const cookies = await page.cookies();
                     const cookies_string = cookies.map(cookie => `${cookie.name}=${cookie.value}`).join('; ');
 
-                    console.log(cookies);
-
                     resolve({
                         poToken: po_token,
                         visitorData: visitor_data,
