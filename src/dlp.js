@@ -59,7 +59,7 @@ const setup_dlp = () => {
         fs.writeFileSync(bin_path, bin_file.data);
 
         // if you're on linux, im pretty sure you need to do this
-        if (process.platform = "linux") {
+        if (process.platform == "linux") {
             exec(`chmod +x ${bin_path}`, (err) => {
                 if (err) {
                     throw Error("failed to give perm");
